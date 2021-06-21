@@ -29,6 +29,7 @@
 #include <windows.h>
 #include <tlhelp32.h>
 #include <limits.h>
+#include <stdio.h>
 
 #include "../include/MinHook.h"
 #include "buffer.h"
@@ -91,6 +92,9 @@ volatile LONG g_isLocked = FALSE;
 
 // Private heap handle. If not NULL, this library is initialized.
 HANDLE g_hHeap = NULL;
+
+// Skip spin lock (for when we're hooking the same function multiple times)
+BOOL g_bSkipSpinLock = FALSE;
 
 // Hook entries.
 struct
@@ -433,8 +437,16 @@ static MH_STATUS EnableAllHooksLL(BOOL enable)
 }
 
 //-------------------------------------------------------------------------
+static VOID SetSpinLockSkip(BOOL bSkip) {
+    g_bSkipSpinLock = bSkip;
+}
+
+//-------------------------------------------------------------------------
 static VOID EnterSpinLock(VOID)
 {
+    if (g_bSkipSpinLock)
+        return;
+
     SIZE_T spinCount = 0;
 
     // Wait until the flag is FALSE.
@@ -456,6 +468,8 @@ static VOID EnterSpinLock(VOID)
 //-------------------------------------------------------------------------
 static VOID LeaveSpinLock(VOID)
 {
+    if (g_bSkipSpinLock)
+        return;
     // No need to generate a memory barrier here, since InterlockedExchange()
     // generates a full memory barrier itself.
 
@@ -611,7 +625,13 @@ MH_STATUS WINAPI MH_CreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOrigina
             }
             else
             {
-                status = MH_ERROR_ALREADY_CREATED;
+                // status = MH_ERROR_ALREADY_CREATED;
+
+                // skip spinlock so we don't end up
+                // in an infinite while loop
+                SetSpinLockSkip(TRUE);
+                status = MH_CreateHook(g_hooks.pItems[pos].pDetour, pDetour, ppOriginal);
+                SetSpinLockSkip(FALSE);
             }
         }
         else

@@ -39,7 +39,7 @@ set(MINHOOK_VERSION ${MINHOOK_MAJOR_VERSION}.${MINHOOK_MINOR_VERSION}.${MINHOOK_
 #    BUILD     # 
 ################
 
-option(BUILD_SHARED_LIBS "build shared version" OFF)
+option(BUILD_SHARED_LIBS "build shared version" ON)
 
 set(SOURCES_MINHOOK 
   "src/buffer.c"

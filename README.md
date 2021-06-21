@@ -8,6 +8,9 @@ http://www.codeproject.com/KB/winsdk/LibMinHook.aspx
 
 ### Version history
 
+- **v1.3.3-HJ - 21 Jun 2021**
+  * Can now hook the same function multiple times through hooking the previous detour
+
 - **v1.3.3 - 8 Jan 2017**
   * Added a helper function ```MH_CreateHookApiEx```. (Thanks to asm256)
   * Support Visual Studio 2017 RC.
