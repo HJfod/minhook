@@ -818,8 +818,6 @@ MH_STATUS WINAPI MH_Uninitialize(VOID)
         return MH_OK;
     }
 
-    MessageBoxA(NULL, "hey", "hi", MB_OK);
-
     EnterSpinLock();
 
     if (g_hHeap != NULL)
